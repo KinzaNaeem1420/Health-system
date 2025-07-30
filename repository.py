@@ -237,4 +237,16 @@ def insert_followup(conn, patient_id, date, notes):
             return followup_id
     except Exception as e:
         raise Exception(f"Follow-up insertion failed: {str(e)}")
-        
+def insert_record(conn, patient_id, condition, medications, instructions, record_date=None):
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO records (patient_id, condition, medications, instructions, record_date)
+                VALUES (%s, %s, %s, %s, %s)
+                """,
+                (patient_id, condition, json.dumps(medications) if medications else None, instructions, record_date or datetime.now())
+            )
+    except Exception as e:
+        logger.error(f"Record insertion failed: {str(e)}")
+        raise

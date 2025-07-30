@@ -42,7 +42,7 @@ def diagnose_conditions(symptoms: List[str]) -> dict:
             if overlap > 0.5:
                 has_match = True
                 # Enhance description with Gemini LLM
-                prompt = f"Provide additional insights for the medical condition '{condition}' based on the symptoms {', '.join(symptoms)}. Include possible causes, general advice, and when to seek medical attention. Use clear headings (e.g., 'Explanation', 'Advice', 'When to Seek Help') and concise bullet points for readability."
+                prompt = f"Provide additional insights for the medical condition '{condition}' based on the symptoms {', '.join(symptoms)}."
                 response = model.generate_content(prompt)
                 enhanced_description = f"{description} [Enhanced]: {response.text}"
                 results.append({"condition": condition, "description": enhanced_description, "match_score": overlap})
@@ -52,7 +52,7 @@ def diagnose_conditions(symptoms: List[str]) -> dict:
             query = ", ".join(symptoms)
             docs = search_documents(query)
             context = "\n".join([doc["content"] for doc in docs]) if docs else "No additional context available."
-            prompt = f"Based on the symptoms {query} and the following context: {context}, predict a possible medical diagnosis. Include a brief explanation, general advice, and when to seek medical attention. Use clear headings (e.g., 'Explanation', 'Advice', 'When to Seek Help') and concise bullet points for readability. Return the condition as 'Diagnosis (Predicted Condition)'."
+            prompt = f"Based on the symptoms {query} and the following context: {context}, predict a possible medical diagnosis. Include a brief general advice a. "
             response = model.generate_content(prompt)
             if response.text:
                 results.append({"condition": response.text.split('\n')[0].replace('**', ''), "description": '\n'.join(response.text.split('\n')[1:]), "match_score": 0.0})
@@ -84,7 +84,7 @@ def get_treatment(condition: str) -> dict:
                 if interaction:
                     interactions.append({"medication_pair": pair, "severity": interaction[0], "description": interaction[1]})
         # Enhance treatment instructions with Gemini LLM
-        prompt = f"Provide additional advice for treating '{condition}' with medications {', '.join(medications)}. Include lifestyle tips, potential side effects, and recovery expectations. Use clear headings (e.g., 'Lifestyle Tips', 'Side Effects', 'Recovery') and concise bullet points for readability."
+        prompt = f"Provide additional advice for treating '{condition}' with medications {', '.join(medications)}"
         response = model.generate_content(prompt)
         treatment_data["instructions"] = f"{treatment_data['instructions']} [Enhanced]: {response.text}"
         return {"treatment": treatment_data, "drug_interactions": interactions}
