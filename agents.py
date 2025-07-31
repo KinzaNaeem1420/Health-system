@@ -321,6 +321,25 @@ def followup_coordinator_node(state: HealthDiagnosticState) -> HealthDiagnosticS
     except Exception as e:
         logger.error(f"Follow-up Coordinator failed: {str(e)}")
         state["response"] = {"error": f"Follow-up Coordinator failed: {str(e)}"}
+        return state# Follow-up Coordinator Agent
+# Follow-up Coordinator Agent
+def followup_coordinator_node(state: HealthDiagnosticState) -> HealthDiagnosticState:
+    try:
+        if state["action"] == "followup":
+            followup = state["followup"]
+            with get_db_connection() as conn:
+                date = followup["date"]
+                if isinstance(date, str):
+                    date = datetime.fromisoformat(date.replace("Z", "+00:00"))
+                elif not isinstance(date, datetime):
+                    raise ValueError("Date must be a valid datetime object or ISO string")
+                followup_id = insert_followup(conn, followup["patient_id"], date, followup["notes"])
+            state["response"] = {"followup_id": followup_id}
+            logger.info(f"Scheduled followup for patient_id: {followup['patient_id']}")
+        return state
+    except Exception as e:
+        logger.error(f"Follow-up Coordinator failed: {str(e)}")
+        state["response"] = {"error": f"Follow-up Coordinator failed: {str(e)}"}
         return state
 
 def create_workflow():

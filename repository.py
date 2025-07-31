@@ -220,23 +220,12 @@ def query_patients(conn, symptoms=None):
         raise Exception(f"Patient query failed: {str(e)}")
 
 def insert_followup(conn, patient_id, date, notes):
-    try:
-        if not isinstance(date, datetime):
-            raise ValueError("Date must be a valid datetime object")
-        with conn.cursor() as cur:
-            cur.execute(
-                """
-                INSERT INTO followups (patient_id, date, notes, completed)
-                VALUES (%s, %s, %s, %s)
-                RETURNING id
-                """,
-                (patient_id, date, notes, False)
-            )
-            followup_id = cur.fetchone()[0]
-            conn.commit()
-            return followup_id
-    except Exception as e:
-        raise Exception(f"Follow-up insertion failed: {str(e)}")
+    with conn.cursor() as cur:
+        cur.execute(
+            "INSERT INTO followups (patient_id, date, notes) VALUES (%s, %s, %s) RETURNING id",
+            (patient_id, date, notes)
+        )
+        return cur.fetchone()[0]
 def insert_record(conn, patient_id, condition, medications, instructions, record_date=None):
     try:
         with conn.cursor() as cur:
